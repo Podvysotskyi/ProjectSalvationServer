@@ -45,14 +45,14 @@ namespace Game.Database
 
         private static void OnDatabaseMigrationStart(object? sender, DatabaseMigrationStartEvent e)
         {
-            Console.WriteLine($"Database: migration '{e.Type}' - Start");
+            Console.WriteLine($"Database: migration '{e.Type.Name}' - Start");
         }
 
         private static void OnDatabaseMigrationComplete(object? sender, DatabaseMigrationCompleteEvent e)
         {
             Console.WriteLine(e.IsComplete
-                ? $"Database: migration '{e.Type}' - Done"
-                : $"Database: migration '{e.Type}' - Failed");
+                ? $"Database: migration '{e.Type.Name}' - Done"
+                : $"Database: migration '{e.Type.Name}' - Failed");
         }
     }
 }

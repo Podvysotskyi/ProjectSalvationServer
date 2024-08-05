@@ -1,8 +1,7 @@
 ﻿namespace Game.Core;
 
-public interface IService
+public interface IService : Initializable
 {
-    public void Init();
     public void Start();
     public void Stop();
 }

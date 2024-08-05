@@ -23,11 +23,11 @@ namespace Game.Database
 
         public void Init()
         {
+            Console.WriteLine("Database: init");
+            
             DatabaseReadyEvent += OnDatabaseReady;
             DatabaseStartMigrationEvent += OnDatabaseMigrationStart;
             DatabaseMigrationCompleteEvent += OnDatabaseMigrationComplete;
-            
-            Console.WriteLine("Database: init");
         }
 
         public void Start()

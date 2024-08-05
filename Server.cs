@@ -1,7 +1,6 @@
 ﻿using Game.Core;
 using Game.Database;
-using DatabaseDomain = Game.Database.Domain;
-using TCP = Game.Network.Tcp;
+using Game.Engine;
 
 namespace Game
 {
@@ -21,19 +20,19 @@ namespace Game
         public void Init()
         {
             DatabaseService.Instance.Init();
-    
-            DatabaseDomain.DomainService.Instance.AddRepository<DatabaseDomain.Repositories.UserRepository>();
-            DatabaseDomain.DomainService.Instance.Init();
-    
-            TCP.NetworkService.Instance.Init();
+            DomainManager.Init();
+            SceneManager.Init();
+            NetworkManager.Init();
         }
 
         public void Start()
         {
             DatabaseService.Instance.Start();
-            TCP.NetworkService.Instance.Start();
+            DomainManager.Start();
+            SceneManager.Start();
+            NetworkManager.Start();
             
-            
+            _thread.Start();
         }
 
         public void Stop()
@@ -44,16 +43,16 @@ namespace Game
 
             _thread.Join();
             
-            TCP.NetworkService.Instance.Stop();
+            NetworkManager.Stop();
         }
 
         private void Run()
         {
-            const int fps = 1000 / 20;
-
+            var target = 1000 / 20;
+            var time = DateTime.Now;
+            
             while (true)
             {
-                var ticks = DateTime.Now.Ticks;
                 _mutex.WaitOne();
                 if (!_running)
                 {
@@ -61,21 +60,22 @@ namespace Game
                     break;
                 }
                 _mutex.ReleaseMutex();
-                Console.Write('.');
 
                 {
-                    //TODO: Update physics
-                    //TODO: Receive network packages
+                    NetworkManager.Tcp.Receive();
                     //TODO: Update
-                    //TODO: Send network packages
-                    TCP.NetworkService.Instance.AcceptConnections();
+                    //TODO: Update physics
+                    SceneManager.Update();
+                    NetworkManager.Tcp.AcceptConnections();
                 }
 
-                var diff = (int)((DateTime.Now.Ticks - ticks) / 1000);
-                if (diff < fps)
+                var length = (int)(DateTime.Now - time).TotalMilliseconds;
+                if (length < target)
                 {
-                    Thread.Sleep(diff);
+                    Thread.Sleep(target - length);
                 }
+
+                time = DateTime.Now;
             }
         }
     }
