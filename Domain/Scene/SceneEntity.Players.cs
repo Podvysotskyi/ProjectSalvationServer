@@ -1,4 +1,5 @@
-﻿using Game.Domain.Player;
+﻿using System.Numerics;
+using Game.Domain.Player;
 using Game.Network.Package.Types;
 
 namespace Game.Domain.Scene;
@@ -9,35 +10,49 @@ public partial class SceneEntity
 
     private void UpdatePlayerPositions()
     {
-        foreach (var client in _players.Values)
+        foreach (var i in _players.Keys)
         {
-            foreach (var player in _players.Values.Where(player => client.Id != player.Id))
+            foreach (var j in _players.Keys)
             {
-                client.SendTcpPackage(new ServerPlayerPosition(player));
+                if (_players[i].Id != _players[j].Id)
+                {
+                    _players[i].SendTcpPackage(new ServerPlayerPosition(_players[j]));
+                }
             }
+            _players[i].SendTcpPackage(new ServerPlayerPosition(_players[i]));
         }
     }
     
-    public void AddPlayer(PlayerEntity newPlayer)
+    public void AddPlayer(PlayerEntity player, Vector3 position)
     {
-        newPlayer.Scene?.RemovePlayer(newPlayer.Id);
-        newPlayer.Scene = this;
+        player.Scene?.RemovePlayer(player);
         
-        _players.Add(newPlayer.Id, newPlayer);
-
-        foreach (var player in _players.Values)
+        player.Scene = this;
+        player.Transform.Position = position;
+        player.Transform.Rotation = DefaultRotation;
+        
+        //TODO: send User Update Scene event
+        foreach (var i in _players.Keys)
         {
-            player.SendTcpPackage(new ServerPlayerPackage(player, true));
+            _players[i].SendTcpPackage(new ServerPlayerStatusPackage(player, true));
         }
+        _players.Add(player.Id, player);
     }
 
-    public void RemovePlayer(string id)
+    public void AddPlayer(PlayerEntity player)
     {
-        _players.Remove(id);
+        AddPlayer(player, DefaultPosition);
+    }
+
+    public void RemovePlayer(PlayerEntity player)
+    {
+        player.Scene = null;
+        _players.Remove(Id);
         
-        foreach (var player in _players.Values)
+        foreach (var i in _players.Keys)
         {
-            player.SendTcpPackage(new ServerPlayerPackage(player, false));
+            _players[i].SendTcpPackage(new ServerPlayerStatusPackage(player, false));
         }
+        //TODO: send User Update Scene event
     }
 }

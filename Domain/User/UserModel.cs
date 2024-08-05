@@ -10,7 +10,7 @@ public class UserModel : Model
     public UserModel(string login, string password): base()
     {
         Login = login;
-        Password = HashHelper.GetSha256Hash(password);
+        Password = password;
     }
 
     public UserModel(string id, string login, string password) : base(id)

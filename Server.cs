@@ -62,11 +62,10 @@ namespace Game
                 _mutex.ReleaseMutex();
 
                 {
-                    NetworkManager.Tcp.Receive();
+                    NetworkManager.Update();
                     //TODO: Update
                     //TODO: Update physics
                     SceneManager.Update();
-                    NetworkManager.Tcp.AcceptConnections();
                 }
 
                 var length = (int)(DateTime.Now - time).TotalMilliseconds;

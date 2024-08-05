@@ -34,7 +34,6 @@ public class AuthService : IService
     private void OnLoginPackage(TcpPackageEvent e)
     {
         var package = NetworkPackageFacade.Convert<ClientLoginPackage>(e.Package);
-        
         var user = new UserModel(package.Login, package.Password);
 
         var connection = e.Connection;

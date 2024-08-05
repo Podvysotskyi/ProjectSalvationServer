@@ -6,12 +6,12 @@ namespace Game.Network.Tcp;
 public class TcpService : IService
 {
     public bool IsRunning { get; private set; }
-    public Event<TcpConnectionEvent> ConnectionAcceptedEvent = new();
-    public event EventHandler<NetworkReadyEvent>? NetworkReadyEvent;
 
     private readonly TcpSocket _tcpSocket;
     private readonly Dictionary<string, TcpConnection> _connections;
 
+    public readonly Event<TcpConnectionEvent> ConnectionAcceptedEvent = new();
+    
     public TcpService(string host, int port)
     {
         _tcpSocket = new TcpSocket(host, port);
@@ -23,9 +23,6 @@ public class TcpService : IService
         Console.WriteLine("TCP network: init");
 
         _tcpSocket.Init();
-
-        ConnectionAcceptedEvent.AddListener(OnConnectionAccepted);
-        NetworkReadyEvent += OnNetworkReady;
     }
 
     public void Start()
@@ -40,7 +37,7 @@ public class TcpService : IService
 
         IsRunning = true;
         
-        NetworkReadyEvent?.Invoke(this, new NetworkReadyEvent());
+        Console.WriteLine("TCP network: ready");
     }
 
     public void Stop()
@@ -51,9 +48,9 @@ public class TcpService : IService
         }
 
         Console.WriteLine("TCP network: stop");
-        foreach (var connection in _connections.Values)
+        foreach (var key in _connections.Keys)
         {
-            connection.Dispose();
+            _connections[key].Stop();
         }
 
         _connections.Clear();
@@ -80,16 +77,21 @@ public class TcpService : IService
         }
 
         _connections.Add(connection.Id, connection);
+        Console.WriteLine($"{connection.Id} | TCP network: connection accepted");
         ConnectionAcceptedEvent.Invoke(new TcpConnectionEvent(connection));
     }
 
-    private static void OnConnectionAccepted(TcpConnectionEvent e)
+    public void CloseConnections()
     {
-        Console.WriteLine("TCP network: connection accepted");
-    }
+        foreach (var key in _connections.Keys)
+        {
+            _connections[key].Update();
 
-    protected virtual void OnNetworkReady(object? target, NetworkReadyEvent? e)
-    {
-        Console.WriteLine("TCP network: ready");
+            if (!_connections[key].IsOpen)
+            {
+                _connections.Remove(key);
+                break;
+            }
+        }
     }
 }

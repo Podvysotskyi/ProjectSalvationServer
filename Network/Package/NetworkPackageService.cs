@@ -12,8 +12,6 @@ public class NetworkPackageService
         
         RegisterPackageType<EmptyPackage>(NetworkPackageType.Empty);
         RegisterPackageType<ClientLoginPackage>(NetworkPackageType.CLogin);
-        RegisterPackageType<ServerPlayerPackage>(NetworkPackageType.SPlayer);
-        RegisterPackageType<ServerPlayerPosition>(NetworkPackageType.SPlayerPosition);
     }
 
     private void RegisterPackageType<T>(NetworkPackageType type) where T : NetworkPackage

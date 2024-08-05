@@ -31,8 +31,6 @@ public class SendPackagesWorker(System.Net.Sockets.Socket socket) : SocketWorker
 
     protected override void Handle()
     {
-        var count = 0;
-            
         while (true)
         {
             Lock();
@@ -48,18 +46,22 @@ public class SendPackagesWorker(System.Net.Sockets.Socket socket) : SocketWorker
                 _buffer.Remove(data);
                     
                 Unlock();
-                Socket.Send(data);
+
+                try
+                {
+                    Socket.Send(data);
+                }
+                catch
+                {
+                    Lock();
+                    Stop();
+                    Unlock();
+                    break;
+                }
             }
             else
             {
                 Unlock();
-                count++;
-
-                if (count > 5)
-                {
-                    count = 0;
-                    Thread.Sleep(10);
-                }
             }
         }
     }

@@ -12,7 +12,7 @@ public class ReceivePackagesWorker(System.Net.Sockets.Socket socket) : SocketWor
         _buffer.Clear();
     }
 
-    public NetworkPackage[] Receive()
+    public List<NetworkPackage> Receive()
     {
         Lock();
         if (_buffer.Count == 0)
@@ -59,7 +59,7 @@ public class ReceivePackagesWorker(System.Net.Sockets.Socket socket) : SocketWor
             
         Unlock();
 
-        return packages.ToArray();
+        return packages;
     }
 
     protected override void Handle()
@@ -73,17 +73,26 @@ public class ReceivePackagesWorker(System.Net.Sockets.Socket socket) : SocketWor
                 break;
             }
             Unlock();
-
+            
             var data = new byte[1024];
-            var length = Socket.Receive(data);
-            if (length >= 4)
+            try
             {
-                Lock();
-                if (IsRunning)
+                var length = Socket.Receive(data);
+                
+                if (length >= 4)
                 {
-                    _buffer.Add(data);
+                    Lock();
+                    if (IsRunning)
+                    {
+                        _buffer.Add(data);
+                    }
+                    Unlock();
                 }
-                Unlock();
+            }
+            catch
+            {
+                Stop();
+                break;
             }
         }
     }

@@ -11,6 +11,11 @@ public class AcceptConnectionWorker(Socket socket) : SocketWorker(socket)
         Lock();
         try
         {
+            if (_sockets.Count == 0)
+            {
+                return null;
+            }
+            
             var socket = _sockets.First();
             _sockets.Remove(socket);
             return socket;
@@ -61,7 +66,7 @@ public class AcceptConnectionWorker(Socket socket) : SocketWorker(socket)
             }
             catch
             {
-                // ignored
+                break;
             }
         }
     }

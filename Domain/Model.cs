@@ -1,10 +1,16 @@
 ﻿namespace Game.Domain;
 
-public abstract class Model(string id)
+public abstract class Model
 {
-    public readonly string Id = id;
+    public readonly string Id;
 
-    protected Model() : this(Guid.NewGuid().ToString())
+    protected Model(string id)
     {
+        Id = id;
+    }
+    
+    protected Model()
+    {
+        Id = Guid.NewGuid().ToString();
     }
 }

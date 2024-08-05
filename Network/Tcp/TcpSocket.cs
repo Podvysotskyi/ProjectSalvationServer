@@ -30,7 +30,15 @@ public class TcpSocket: IService, IDisposable
 
     public void Dispose()
     {
-        Stop();
+        try
+        {
+            _socket?.Shutdown(SocketShutdown.Both);
+            _socket?.Close();
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     public void Init()
@@ -80,8 +88,7 @@ public class TcpSocket: IService, IDisposable
         Console.WriteLine("TCP socket: stop");
         _acceptConnectionThread?.Stop();
 
-        _socket?.Shutdown(SocketShutdown.Both);
-        _socket?.Close();
+        Dispose();
 
         IsRunning = false;
     }

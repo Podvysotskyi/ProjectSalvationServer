@@ -1,21 +1,16 @@
 ﻿using Game.Core;
 using Game.Engine;
+using Game.Network.Package.Types;
 
 namespace Game.Domain.Player;
 
 public class PlayerService : IService
 {
-    private readonly AuthService _authService;
+    private readonly AuthService _authService = new();
 
-    public PlayerService()
-    {
-        _authService = new AuthService();
-    }
-    
     public void Init()
     {
         _authService.Init();
-        
         _authService.UserLoginEvent.AddListener(OnUserLogin);
     }
 
@@ -32,6 +27,8 @@ public class PlayerService : IService
     private void OnUserLogin(UserLoginEvent e)
     {
         var player = new PlayerEntity(e.User, e.Connection);
+        
+        player.SendTcpPackage(new ServerPlayerAuthPackage(player, true));
         
         SceneManager.DefaultScene.AddPlayer(player);
     }

@@ -3,7 +3,10 @@
 public enum NetworkPackageType : ushort
 {
     Empty = 0,
+    
     CLogin = 100,
-    SPlayer = 1000,
+    SAuth = 101,
+    
+    SPlayerStatus = 1000,
     SPlayerPosition = 1001,
 }

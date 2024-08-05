@@ -4,7 +4,7 @@ namespace Game.Network.Tcp.Workers;
 
 public abstract class SocketWorker : IDisposable
 {
-    protected bool IsRunning { get; private set; }
+    public bool IsRunning { get; protected set; }
 
     protected Socket Socket { get; private set; }
     private readonly Thread _thread;
