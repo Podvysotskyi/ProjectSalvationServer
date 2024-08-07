@@ -5,15 +5,15 @@ namespace Game.Engine;
 
 public class SceneManager : ServiceManager<SceneService>
 {
-    public static SceneEntity DefaultScene => Scene("welcome");
+    public static ref Scene DefaultScene => ref Scene("welcome");
     
-    public static SceneEntity Scene(string id)
+    public static ref Scene Scene(string id)
     {
-        return Instance.GetScene(id);
+        return ref Instance.GetScene(id);
     }
 
-    public static void Update()
+    public static void SendPositionUpdates()
     {
-        Instance.Update();
+        Instance.SendPositionUpdates();
     }
 }

@@ -2,80 +2,90 @@
 using Game.Database;
 using Game.Engine;
 
-namespace Game
+namespace Game;
+
+public class Server : IService
 {
-    public class Server : IService
+    private bool _running;
+    private readonly Mutex _mutex;
+    private readonly Thread _thread;
+
+    public Server()
     {
-        private bool _running;
-        private readonly Mutex _mutex;
-        private readonly Thread _thread;
+        _running = true;
+        _mutex = new Mutex();
+        _thread = new Thread(Run);
+    }
 
-        public Server()
-        {
-            _running = true;
-            _mutex = new Mutex();
-            _thread = new Thread(Run);
-        }
+    public void Init()
+    {
+        DatabaseService.Instance.Init();
+        DomainManager.Init();
+        SceneManager.Init();
+        PlayerManager.Init();
+        NetworkManager.Init();
+    }
+
+    public void Start()
+    {
+        DatabaseService.Instance.Start();
+        DomainManager.Start();
+        SceneManager.Start();
+        PlayerManager.Start();
+        NetworkManager.Start();
+
+        _thread.Start();
+    }
+
+    public void Stop()
+    {
+        _mutex.WaitOne();
+        _running = false;
+        _mutex.ReleaseMutex();
+
+        _thread.Join();
+
+        PlayerManager.Stop();
+        SceneManager.Stop();
+
+        NetworkManager.Stop();
+    }
+
+    private void Run()
+    {
+        const float fps = 40.0f;
         
-        public void Init()
-        {
-            DatabaseService.Instance.Init();
-            DomainManager.Init();
-            SceneManager.Init();
-            NetworkManager.Init();
-        }
+        var targetTime = 1000 / fps;
+        var time = DateTime.Now;
 
-        public void Start()
-        {
-            DatabaseService.Instance.Start();
-            DomainManager.Start();
-            SceneManager.Start();
-            NetworkManager.Start();
-            
-            _thread.Start();
-        }
-
-        public void Stop()
+        while (true)
         {
             _mutex.WaitOne();
-            _running = false;
+            if (!_running)
+            {
+                _mutex.ReleaseMutex();
+                break;
+            }
+
             _mutex.ReleaseMutex();
 
-            _thread.Join();
-            
-            NetworkManager.Stop();
-        }
-
-        private void Run()
-        {
-            var target = 1000 / 20;
-            var time = DateTime.Now;
-            
-            while (true)
             {
-                _mutex.WaitOne();
-                if (!_running)
-                {
-                    _mutex.ReleaseMutex();
-                    break;
-                }
-                _mutex.ReleaseMutex();
-
-                {
-                    NetworkManager.Update();
-                    //TODO: Update
-                    //TODO: Update physics
-                    SceneManager.Update();
-                }
-
-                var length = (int)(DateTime.Now - time).TotalMilliseconds;
-                if (length < target)
-                {
-                    Thread.Sleep(target - length);
-                }
-
-                time = DateTime.Now;
+                NetworkManager.Update();
+                PlayerManager.Update(targetTime / 1000.0f);
+                
+                //TODO: Update physics
+                
+                PlayerManager.SendPositionUpdates();
+                SceneManager.SendPositionUpdates();
             }
+
+            var frameTime = (DateTime.Now - time).TotalMilliseconds;
+            if (frameTime < targetTime)
+            {
+                Thread.Sleep((int)(targetTime - frameTime));
+            }
+
+            time = DateTime.Now;
         }
     }
 }

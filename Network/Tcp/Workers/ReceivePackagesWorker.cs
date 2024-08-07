@@ -22,15 +22,15 @@ public class ReceivePackagesWorker(System.Net.Sockets.Socket socket) : SocketWor
         }
             
         var packages = new List<NetworkPackage>();
-        foreach (var buffer in _buffer)
+        for (var i = 0; i < _buffer.Count; i++)
         {
+            var buffer = _buffer[i];
             var position = 0;
 
+            var type = (NetworkPackageType)BitConverterHelper.ReadUShort(buffer, ref position);
+            var length = BitConverterHelper.ReadUShort(buffer, ref position);
             try
             {
-                var type = (NetworkPackageType)BitConverterHelper.ReadUShort(buffer, ref position);
-                var length = BitConverterHelper.ReadUShort(buffer, ref position);
-
                 NetworkPackage? package;
                 if (length > 0)
                 {
@@ -42,19 +42,14 @@ public class ReceivePackagesWorker(System.Net.Sockets.Socket socket) : SocketWor
                     package = NetworkPackageFacade.CreatePackage(type);
                 }
 
-                if (package == null)
-                {
-                    throw new Exception();
-                }
-                    
                 packages.Add(package);
             }
-            catch
+            catch (Exception e)
             {
-                Unlock();
-                throw new Exception("Fail to read a package");
+                Console.WriteLine($"Fail to read '{type}' package: {e}");
             }
         }
+
         _buffer.Clear();
             
         Unlock();

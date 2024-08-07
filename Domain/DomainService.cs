@@ -1,5 +1,4 @@
 ﻿using Game.Core;
-using Game.Domain.Player;
 using Game.Domain.User;
 
 namespace Game.Domain;
@@ -7,8 +6,6 @@ namespace Game.Domain;
 public class DomainService : IService
 {
     private readonly Dictionary<Type, Repository> _repositories;
-
-    public readonly PlayerService PlayerService = new();
     
     public DomainService()
     {
@@ -23,18 +20,14 @@ public class DomainService : IService
         {
             _repositories[type].Init();
         }
-        
-        PlayerService.Init();
     }
 
     public void Start()
     {
-        PlayerService.Start();
     }
         
     public void Stop()
     {
-        PlayerService.Stop();
     }
     
     public void AddRepository<T>() where T : Repository

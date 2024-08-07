@@ -45,9 +45,9 @@ namespace Game.Database
             throw new NotImplementedException();
         }
 
-        public DatabaseConnection OpenConnection()
+        public static DatabaseConnection OpenConnection()
         {
-            var connection = new DatabaseConnection(_filename);
+            var connection = new DatabaseConnection(Instance._filename);
 
             connection.DatabaseQueryEvent += OnDatabaseQuery;
 

@@ -3,7 +3,7 @@ using Game.Helpers;
 
 namespace Game.Network.Package.Types
 {
-    public class ServerPlayerStatusPackage(PlayerEntity player, bool status) : NetworkPackage(NetworkPackageType.SPlayerStatus)
+    public class ServerPlayerStatusPackage(Player player, bool status) : NetworkPackage(NetworkPackageType.SPlayerStatus)
     {
         private string Id => player.Id;
         private string Name => player.Name;

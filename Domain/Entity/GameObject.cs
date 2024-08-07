@@ -1,15 +1,24 @@
-﻿using Game.Domain.Scene;
+﻿using Game.Engine;
 
 namespace Game.Domain.Entity;
 
-public class GameObject
+public class GameObject : IDisposable
 {
-    public readonly Transform Transform;
+    public readonly Transform Transform = new();
 
-    public SceneEntity? Scene;
+    private string? _scene;
 
-    public GameObject()
+    public Scene.Scene? Scene
     {
-        Transform = new Transform();
+        get => _scene == null ? null : SceneManager.Scene(_scene);
+        set => _scene = value?.Id;
+    }
+
+    public virtual void Update(float delta)
+    {
+    }
+
+    public virtual void Dispose()
+    {
     }
 }

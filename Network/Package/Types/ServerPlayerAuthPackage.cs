@@ -3,8 +3,11 @@ using Game.Helpers;
 
 namespace Game.Network.Package.Types
 {
-    public class ServerPlayerAuthPackage(PlayerEntity player, bool status) : NetworkPackage(NetworkPackageType.SAuth)
+    public class ServerPlayerAuthPackage(bool status, Player? player = null) : NetworkPackage(NetworkPackageType.SAuth)
     {
+        private string Id => player?.Id ?? "";
+        private string Name => player?.Name ?? "";
+        
         public override byte[] ToArray()
         {
             var result = new List<byte>();
@@ -13,8 +16,8 @@ namespace Game.Network.Package.Types
 
             if (status)
             {
-                result.AddRange(BitConverterHelper.ToArray(player.Id));
-                result.AddRange(BitConverterHelper.ToArray(player.Name));
+                result.AddRange(BitConverterHelper.ToArray(Id));
+                result.AddRange(BitConverterHelper.ToArray(Name));
             }
 
             return result.ToArray();

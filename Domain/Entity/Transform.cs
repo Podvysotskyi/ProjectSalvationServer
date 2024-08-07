@@ -2,12 +2,13 @@
 
 namespace Game.Domain.Entity;
 
-public class Transform(Vector3 position, Quaternion rotation)
+public class Transform
 {
-    public Vector3 Position = position;
-    public Quaternion Rotation = rotation;
+    public Vector3 Position;
 
-    public Transform() : this(new Vector3(0, 0, 0), Quaternion.Identity)
+    public Quaternion Rotation;
+
+    public Transform() : this(Vector3.Zero, Quaternion.Identity)
     {
     }
     
@@ -15,7 +16,13 @@ public class Transform(Vector3 position, Quaternion rotation)
     {
     }
     
-    public Transform(Quaternion rotation) : this(new Vector3(0, 0, 0), rotation)
+    public Transform(Quaternion rotation) : this(Vector3.Zero, rotation)
     {
+    }
+    
+    public Transform(Vector3 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
     }
 }

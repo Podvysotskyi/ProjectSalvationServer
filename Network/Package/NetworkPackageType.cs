@@ -8,5 +8,8 @@ public enum NetworkPackageType : ushort
     SAuth = 101,
     
     SPlayerStatus = 1000,
-    SPlayerPosition = 1001,
+    SPlayerPosition = 1002,
+    CPlayerPosition = 1003,
+    SPlayerScene = 1004,
+    CSceneReady = 1005,
 }

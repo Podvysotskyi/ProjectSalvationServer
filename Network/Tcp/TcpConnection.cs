@@ -1,7 +1,6 @@
 ﻿using System.Net.Sockets;
 using Game.Core;
 using Game.Network.Package;
-using Game.Network.Package.Types;
 using Game.Network.Tcp.Events;
 using Game.Network.Tcp.Workers;
 
@@ -9,13 +8,13 @@ namespace Game.Network.Tcp;
 
 public class TcpConnection : IDisposable
 {
-    public const int MaxPackageDelay = 10;
+    private const int MaxPackageDelay = 30;
     
     public readonly string Id;
     public readonly Event<TcpConnectionEvent> ConnectionClosedEvent = new();
         
     public bool IsOpen { get; private set; }
-    public DateTime LastPackageDateTime { get; private set; }
+    private DateTime LastPackage { get; set; }
     
     private readonly Socket _socket;
     private readonly SendPackagesWorker _sendPackagesWorker;
@@ -28,7 +27,7 @@ public class TcpConnection : IDisposable
             
         IsOpen = true;
         Id = Guid.NewGuid().ToString();
-        LastPackageDateTime = DateTime.Now;
+        LastPackage = DateTime.Now;
             
         _sendPackagesWorker = new SendPackagesWorker(socket);
         _sendPackagesWorker.Start();
@@ -76,9 +75,11 @@ public class TcpConnection : IDisposable
         }
         
         _sendPackagesWorker.Send(package);
-        LastPackageDateTime = DateTime.Now;
-        
-        Console.WriteLine($"{Id} | TCP network: send package '{package.Type}'");
+
+        if (package.Type != NetworkPackageType.SPlayerPosition)
+        {
+            Console.WriteLine($"{Id} | TCP network: send package '{package.Type}'");
+        }
     }
 
     public void Receive()
@@ -92,8 +93,13 @@ public class TcpConnection : IDisposable
         
         for (var i = 0; i < packages.Count; i++)
         {
-            Console.WriteLine($"{Id} | TCP network: received package '{packages[i].Type}'");
-            LastPackageDateTime = DateTime.Now;
+            if (packages[i].Type != NetworkPackageType.CPlayerPosition)
+            {
+                Console.WriteLine($"{Id} | TCP network: received package '{packages[i].Type}'");
+            }
+            
+            LastPackage = DateTime.Now;
+            
             this[packages[i].Type].Invoke(new TcpPackageEvent(this, packages[i]));
         }
 
@@ -123,17 +129,15 @@ public class TcpConnection : IDisposable
         }
         _receivePackagesWorker.Unlock();
 
+        var diff = (int)(DateTime.Now - LastPackage).TotalSeconds;
+        if (diff > MaxPackageDelay)
+        {
+            isRunning = false;
+        }
+        
         if (!isRunning)
         {
             Stop();
-        }
-        else
-        {
-            var diff = (int)(DateTime.Now - LastPackageDateTime).TotalSeconds;
-            if (diff > MaxPackageDelay)
-            {
-                Send(new EmptyPackage());
-            }
         }
     }
     

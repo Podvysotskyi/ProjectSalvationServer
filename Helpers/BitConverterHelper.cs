@@ -43,26 +43,46 @@ public static class BitConverterHelper
     
     public static float ReadFloat(byte[] data, ref int position)
     {
-        var result = BitConverter.ToSingle(data, position);
-        position += 2;
-        return result;
+        try
+        {
+            var result = BitConverter.ToSingle(data, position);
+            position += 4;
+            return result;
+        }
+        catch
+        {
+            throw new Exception($"Fail to read float at {position}");
+        }
     }
     
     public static Vector3 ReadVector3(byte[] data, ref int position)
     {
-        var x = ReadFloat(data, ref position);
-        var y = ReadFloat(data, ref position);
-        var z = ReadFloat(data, ref position);
-        return new Vector3(x, y, z);
+        try
+        {
+            var x = ReadFloat(data, ref position);
+            var y = ReadFloat(data, ref position);
+            var z = ReadFloat(data, ref position);
+            return new Vector3(x, y, z);
+        }
+        catch
+        {
+            throw new Exception("Fail to read Vector3");
+        }
     }
     
     public static Quaternion ReadQuaternion(byte[] data, ref int position)
     {
-        var x = ReadFloat(data, ref position);
-        var y = ReadFloat(data, ref position);
-        var z = ReadFloat(data, ref position);
-        var w = ReadFloat(data, ref position);
-        return new Quaternion(x, y, z, w);
+        try {
+            var x = ReadFloat(data, ref position);
+            var y = ReadFloat(data, ref position);
+            var z = ReadFloat(data, ref position);
+            var w = ReadFloat(data, ref position);
+            return new Quaternion(x, y, z, w);
+        }
+        catch
+        {
+            throw new Exception("Fail to read Quaternion");
+        }
     }
     
     public static byte[] ToArray(bool value)
@@ -96,14 +116,19 @@ public static class BitConverterHelper
             
         return buffer.ToArray();
     }
+    
+    public static byte[] ToArray(float value)
+    {
+        return BitConverter.GetBytes(value);
+    }
 
     public static byte[] ToArray(Vector3 value)
     {
         var buffer = new List<byte>();
 
-        buffer.AddRange(BitConverter.GetBytes(value.X));
-        buffer.AddRange(BitConverter.GetBytes(value.Y));
-        buffer.AddRange(BitConverter.GetBytes(value.Z));
+        buffer.AddRange(ToArray(value.X));
+        buffer.AddRange(ToArray(value.Y));
+        buffer.AddRange(ToArray(value.Z));
 
         return buffer.ToArray();
     }
@@ -112,10 +137,10 @@ public static class BitConverterHelper
     {
         var buffer = new List<byte>();
 
-        buffer.AddRange(BitConverter.GetBytes(value.X));
-        buffer.AddRange(BitConverter.GetBytes(value.Y));
-        buffer.AddRange(BitConverter.GetBytes(value.Z));
-        buffer.AddRange(BitConverter.GetBytes(value.W));
+        buffer.AddRange(ToArray(value.X));
+        buffer.AddRange(ToArray(value.Y));
+        buffer.AddRange(ToArray(value.Z));
+        buffer.AddRange(ToArray(value.W));
 
         return buffer.ToArray();
     }

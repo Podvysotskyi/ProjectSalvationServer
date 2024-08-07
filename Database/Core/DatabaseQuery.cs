@@ -15,6 +15,7 @@
             NotExists,
         }
 
+        private int _limit = 0;
         private readonly Type _type;
         private string _table;
         private bool _distinct = false;
@@ -57,6 +58,12 @@
         public DatabaseQuery Distinct()
         {
             _distinct = true;
+            return this;
+        }
+
+        public DatabaseQuery Limit(int value)
+        {
+            _limit = value;
             return this;
         }
 
@@ -154,6 +161,11 @@
                 for (int i = 0; i < _conditions.Count; i++)
                 {
                     sql += $" {(i == 0 ? "WHERE" : "AND")} {_conditions[i]}";
+                }
+
+                if (_limit > 0)
+                {
+                    sql += $" LIMIT {_limit}";
                 }
 
                 if (_exists == ExistsType.NotExists)
